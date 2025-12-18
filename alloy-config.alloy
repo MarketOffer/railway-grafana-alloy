@@ -62,3 +62,119 @@ prometheus.scrape "system_metrics" {
   forward_to = [prometheus.remote_write.grafana_cloud.receiver]
   scrape_interval = coalesce(env("SCRAPE_INTERVAL"), "30s")
 }
+
+// Relabel service names for downstream metrics in Grafana Cloud
+prometheus.relabel "marketoffer_services_labels" {
+  forward_to = [prometheus.remote_write.grafana_cloud.receiver]
+  rule {
+    action       = "replace"
+    target_label = "service"
+    replacement  = "marketoffer-services"
+  }
+}
+
+prometheus.relabel "director_discovery_labels" {
+  forward_to = [prometheus.remote_write.grafana_cloud.receiver]
+  rule {
+    action       = "replace"
+    target_label = "service"
+    replacement  = "director-discovery"
+  }
+}
+
+prometheus.relabel "owner_discovery_labels" {
+  forward_to = [prometheus.remote_write.grafana_cloud.receiver]
+  rule {
+    action       = "replace"
+    target_label = "service"
+    replacement  = "owner-discovery"
+  }
+}
+
+prometheus.relabel "company_discovery_labels" {
+  forward_to = [prometheus.remote_write.grafana_cloud.receiver]
+  rule {
+    action       = "replace"
+    target_label = "service"
+    replacement  = "company-discovery"
+  }
+}
+
+prometheus.relabel "site_fetch_labels" {
+  forward_to = [prometheus.remote_write.grafana_cloud.receiver]
+  rule {
+    action       = "replace"
+    target_label = "service"
+    replacement  = "site-fetch"
+  }
+}
+
+prometheus.relabel "person_linkedin_labels" {
+  forward_to = [prometheus.remote_write.grafana_cloud.receiver]
+  rule {
+    action       = "replace"
+    target_label = "service"
+    replacement  = "person-linkedin"
+  }
+}
+
+// Scrapes for each service, forwarding through relabeling to Grafana Cloud
+prometheus.scrape "marketoffer-services" {
+  targets      = [{ __address__ = "marketoffer-services:8080" }]
+  metrics_path = "/metrics"
+  forward_to   = [prometheus.relabel.marketoffer_services_labels.receiver]
+}
+
+prometheus.scrape "director-discovery" {
+  targets      = [{ __address__ = "worker-director-discovery:8080" }]
+  metrics_path = "/metrics"
+  forward_to   = [prometheus.relabel.director_discovery_labels.receiver]
+}
+
+prometheus.scrape "owner-discovery" {
+  targets      = [{ __address__ = "worker-owner-discovery:8080" }]
+  metrics_path = "/metrics"
+  forward_to   = [prometheus.relabel.owner_discovery_labels.receiver]
+}
+
+prometheus.scrape "company-discovery" {
+  targets      = [{ __address__ = "worker-company-discovery:8080" }]
+  metrics_path = "/metrics"
+  forward_to   = [prometheus.relabel.company_discovery_labels.receiver]
+}
+
+prometheus.scrape "site-fetch" {
+  targets      = [{ __address__ = "worker-site-fetch:8080" }]
+  metrics_path = "/metrics"
+  forward_to   = [prometheus.relabel.site_fetch_labels.receiver]
+}
+
+prometheus.scrape "site-fetch-analysis" {
+  targets      = [{ __address__ = "worker-site-fetchanalysis:8080" }]
+  metrics_path = "/metrics"
+  forward_to   = [prometheus.relabel.site_fetch_labels.receiver]
+}
+
+prometheus.scrape "site-fetch-analysis-2" {
+  targets      = [{ __address__ = "worker-site-fetchanalysis-2:8080" }]
+  metrics_path = "/metrics"
+  forward_to   = [prometheus.relabel.site_fetch_labels.receiver]
+}
+
+prometheus.scrape "site-fetch-fetcher" {
+  targets      = [{ __address__ = "worker-site-fetchfetcher:8080" }]
+  metrics_path = "/metrics"
+  forward_to   = [prometheus.relabel.site_fetch_labels.receiver]
+}
+
+prometheus.scrape "site-fetch-fetcher-2" {
+  targets      = [{ __address__ = "worker-site-fetchfetcher-2:8080" }]
+  metrics_path = "/metrics"
+  forward_to   = [prometheus.relabel.site_fetch_labels.receiver]
+}
+
+prometheus.scrape "person-linkedin" {
+  targets      = [{ __address__ = "worker-person-linkedin:8080" }]
+  metrics_path = "/metrics"
+  forward_to   = [prometheus.relabel.person_linkedin_labels.receiver]
+}

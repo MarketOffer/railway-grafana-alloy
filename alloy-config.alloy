@@ -119,61 +119,61 @@ prometheus.relabel "person_linkedin_labels" {
 }
 
 // Scrapes for each service, forwarding through relabeling to Grafana Cloud
-prometheus.scrape "marketoffer-services" {
+prometheus.scrape marketoffer_services {
   targets      = [{ __address__ = "marketoffer-services:8080" }]
   metrics_path = "/metrics"
   forward_to   = [prometheus.relabel.marketoffer_services_labels.receiver]
 }
 
-prometheus.scrape "director-discovery" {
+prometheus.scrape director_discovery {
   targets      = [{ __address__ = "worker-director-discovery:8080" }]
   metrics_path = "/metrics"
   forward_to   = [prometheus.relabel.director_discovery_labels.receiver]
 }
 
-prometheus.scrape "owner-discovery" {
+prometheus.scrape owner_discovery {
   targets      = [{ __address__ = "worker-owner-discovery:8080" }]
   metrics_path = "/metrics"
   forward_to   = [prometheus.relabel.owner_discovery_labels.receiver]
 }
 
-prometheus.scrape "company-discovery" {
+prometheus.scrape company_discovery {
   targets      = [{ __address__ = "worker-company-discovery:8080" }]
   metrics_path = "/metrics"
   forward_to   = [prometheus.relabel.company_discovery_labels.receiver]
 }
 
-prometheus.scrape "site-fetch" {
+prometheus.scrape site_fetch {
   targets      = [{ __address__ = "worker-site-fetch:8080" }]
   metrics_path = "/metrics"
   forward_to   = [prometheus.relabel.site_fetch_labels.receiver]
 }
 
-prometheus.scrape "site-fetch-analysis" {
+prometheus.scrape site_fetch_analysis {
   targets      = [{ __address__ = "worker-site-fetchanalysis:8080" }]
   metrics_path = "/metrics"
   forward_to   = [prometheus.relabel.site_fetch_labels.receiver]
 }
 
-prometheus.scrape "site-fetch-analysis-2" {
+prometheus.scrape site_fetch_analysis_2 {
   targets      = [{ __address__ = "worker-site-fetchanalysis-2:8080" }]
   metrics_path = "/metrics"
   forward_to   = [prometheus.relabel.site_fetch_labels.receiver]
 }
 
-prometheus.scrape "site-fetch-fetcher" {
+prometheus.scrape site_fetch_fetcher {
   targets      = [{ __address__ = "worker-site-fetchfetcher:8080" }]
   metrics_path = "/metrics"
   forward_to   = [prometheus.relabel.site_fetch_labels.receiver]
 }
 
-prometheus.scrape "site-fetch-fetcher-2" {
+prometheus.scrape site_fetch_fetcher_2 {
   targets      = [{ __address__ = "worker-site-fetchfetcher-2:8080" }]
   metrics_path = "/metrics"
   forward_to   = [prometheus.relabel.site_fetch_labels.receiver]
 }
 
-prometheus.scrape "person-linkedin" {
+prometheus.scrape person_linkedin {
   targets      = [{ __address__ = "worker-person-linkedin:8080" }]
   metrics_path = "/metrics"
   forward_to   = [prometheus.relabel.person_linkedin_labels.receiver]

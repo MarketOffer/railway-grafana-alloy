@@ -28,6 +28,21 @@ loki.write "grafana_cloud" {
   }
 }
 
+// Gate log forwarding based on SEND_LOGS_TO_GRAFANA (defaults to true).
+loki.relabel "logs_gate" {
+  forward_to = [loki.write.grafana_cloud.receiver]
+  rule {
+    action       = "replace"
+    target_label = "__tmp_send_logs_to_grafana"
+    replacement  = coalesce(env("SEND_LOGS_TO_GRAFANA"), "true")
+  }
+  rule {
+    action        = "drop"
+    source_labels = ["__tmp_send_logs_to_grafana"]
+    regex         = "false"
+  }
+}
+
 // HTTP server for receiving metrics
 prometheus.receive_http "metrics_receiver" {
   http {
@@ -43,8 +58,7 @@ loki.source.api "logs_receiver" {
     listen_address = "0.0.0.0"
     listen_port = 3100
   }
-  // Disable forwarding when SEND_LOGS_TO_GRAFANA is not "true".
-  forward_to = coalesce(env("SEND_LOGS_TO_GRAFANA"), "true") == "true" ? [loki.write.grafana_cloud.receiver] : []
+  forward_to = [loki.relabel.logs_gate.receiver]
 }
 
 // Collect system metrics from Alloy itself
@@ -77,6 +91,11 @@ prometheus.relabel "marketoffer_services_labels" {
 prometheus.relabel "director_discovery_labels" {
   forward_to = [prometheus.remote_write.grafana_cloud.receiver]
   rule {
+    action        = "drop"
+    source_labels = ["__name__"]
+    regex         = "queue_.*"
+  }
+  rule {
     action       = "replace"
     target_label = "service"
     replacement  = "director-discovery"
@@ -85,6 +104,11 @@ prometheus.relabel "director_discovery_labels" {
 
 prometheus.relabel "owner_discovery_labels" {
   forward_to = [prometheus.remote_write.grafana_cloud.receiver]
+  rule {
+    action        = "drop"
+    source_labels = ["__name__"]
+    regex         = "queue_.*"
+  }
   rule {
     action       = "replace"
     target_label = "service"
@@ -95,6 +119,11 @@ prometheus.relabel "owner_discovery_labels" {
 prometheus.relabel "company_discovery_labels" {
   forward_to = [prometheus.remote_write.grafana_cloud.receiver]
   rule {
+    action        = "drop"
+    source_labels = ["__name__"]
+    regex         = "queue_.*"
+  }
+  rule {
     action       = "replace"
     target_label = "service"
     replacement  = "company-discovery"
@@ -104,6 +133,11 @@ prometheus.relabel "company_discovery_labels" {
 prometheus.relabel "site_fetch_labels" {
   forward_to = [prometheus.remote_write.grafana_cloud.receiver]
   rule {
+    action        = "drop"
+    source_labels = ["__name__"]
+    regex         = "queue_.*"
+  }
+  rule {
     action       = "replace"
     target_label = "service"
     replacement  = "site-fetch"
@@ -112,6 +146,11 @@ prometheus.relabel "site_fetch_labels" {
 
 prometheus.relabel "person_linkedin_labels" {
   forward_to = [prometheus.remote_write.grafana_cloud.receiver]
+  rule {
+    action        = "drop"
+    source_labels = ["__name__"]
+    regex         = "queue_.*"
+  }
   rule {
     action       = "replace"
     target_label = "service"
@@ -133,11 +172,6 @@ prometheus.scrape "director_discovery" {
   metrics_path = "/metrics"
   scrape_interval = "120s"
   scrape_timeout  = "10s"
-  metric_relabel_configs = [{
-    source_labels = ["__name__"],
-    regex         = "queue_.*",
-    action        = "drop"
-  }]
   forward_to   = [prometheus.relabel.director_discovery_labels.receiver]
 }
 
@@ -146,11 +180,6 @@ prometheus.scrape "owner_discovery" {
   metrics_path = "/metrics"
   scrape_interval = "120s"
   scrape_timeout  = "10s"
-  metric_relabel_configs = [{
-    source_labels = ["__name__"],
-    regex         = "queue_.*",
-    action        = "drop"
-  }]
   forward_to   = [prometheus.relabel.owner_discovery_labels.receiver]
 }
 
@@ -159,11 +188,6 @@ prometheus.scrape "company_discovery" {
   metrics_path = "/metrics"
   scrape_interval = "120s"
   scrape_timeout  = "10s"
-  metric_relabel_configs = [{
-    source_labels = ["__name__"],
-    regex         = "queue_.*",
-    action        = "drop"
-  }]
   forward_to   = [prometheus.relabel.company_discovery_labels.receiver]
 }
 
@@ -172,11 +196,6 @@ prometheus.scrape "site_fetch" {
   metrics_path = "/metrics"
   scrape_interval = "120s"
   scrape_timeout  = "10s"
-  metric_relabel_configs = [{
-    source_labels = ["__name__"],
-    regex         = "queue_.*",
-    action        = "drop"
-  }]
   forward_to   = [prometheus.relabel.site_fetch_labels.receiver]
 }
 
@@ -185,11 +204,6 @@ prometheus.scrape "site_fetch_analysis" {
   metrics_path = "/metrics"
   scrape_interval = "120s"
   scrape_timeout  = "10s"
-  metric_relabel_configs = [{
-    source_labels = ["__name__"],
-    regex         = "queue_.*",
-    action        = "drop"
-  }]
   forward_to   = [prometheus.relabel.site_fetch_labels.receiver]
 }
 
@@ -198,11 +212,6 @@ prometheus.scrape "site_fetch_analysis_2" {
   metrics_path = "/metrics"
   scrape_interval = "120s"
   scrape_timeout  = "10s"
-  metric_relabel_configs = [{
-    source_labels = ["__name__"],
-    regex         = "queue_.*",
-    action        = "drop"
-  }]
   forward_to   = [prometheus.relabel.site_fetch_labels.receiver]
 }
 
@@ -211,11 +220,6 @@ prometheus.scrape "site_fetch_fetcher" {
   metrics_path = "/metrics"
   scrape_interval = "120s"
   scrape_timeout  = "10s"
-  metric_relabel_configs = [{
-    source_labels = ["__name__"],
-    regex         = "queue_.*",
-    action        = "drop"
-  }]
   forward_to   = [prometheus.relabel.site_fetch_labels.receiver]
 }
 
@@ -224,11 +228,6 @@ prometheus.scrape "site_fetch_fetcher_2" {
   metrics_path = "/metrics"
   scrape_interval = "120s"
   scrape_timeout  = "10s"
-  metric_relabel_configs = [{
-    source_labels = ["__name__"],
-    regex         = "queue_.*",
-    action        = "drop"
-  }]
   forward_to   = [prometheus.relabel.site_fetch_labels.receiver]
 }
 
@@ -237,10 +236,5 @@ prometheus.scrape "person_linkedin" {
   metrics_path = "/metrics"
   scrape_interval = "120s"
   scrape_timeout  = "10s"
-  metric_relabel_configs = [{
-    source_labels = ["__name__"],
-    regex         = "queue_.*",
-    action        = "drop"
-  }]
   forward_to   = [prometheus.relabel.person_linkedin_labels.receiver]
 }

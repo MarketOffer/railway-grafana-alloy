@@ -26,15 +26,16 @@ This template sets up [Grafana Alloy](https://grafana.com/docs/alloy/) to stream
 
 3. **Add these environment variables to Railway:**
 
-| Variable                       | Description                             |
-| ------------------------------ | --------------------------------------- |
-| `GRAFANA_PROMETHEUS_HOST`      | Your Prometheus remote write endpoint   |
-| `GRAFANA_PROMETHEUS_USERNAME`  | Provided in Grafana Cloud               |
-| `GRAFANA_PROMETHEUS_PASSWORD`  | Provided in Grafana Cloud               |
-| `LOKI_HOST`                    | Your Loki endpoint                      |
-| `LOKI_USERNAME`                | Provided in Grafana Cloud               |
-| `LOKI_PASSWORD`                | Provided in Grafana Cloud               |
-| _(optional)_ `SCRAPE_INTERVAL` | Metrics scrape interval (default `30s`) |
+| Variable                              | Description                                                                        |
+| ------------------------------------- | ---------------------------------------------------------------------------------- |
+| `GRAFANA_PROMETHEUS_HOST`             | Your Prometheus remote write endpoint                                              |
+| `GRAFANA_PROMETHEUS_USERNAME`         | Provided in Grafana Cloud                                                          |
+| `GRAFANA_PROMETHEUS_PASSWORD`         | Provided in Grafana Cloud                                                          |
+| `LOKI_HOST`                           | Your Loki endpoint                                                                 |
+| `LOKI_USERNAME`                       | Provided in Grafana Cloud                                                          |
+| `LOKI_PASSWORD`                       | Provided in Grafana Cloud                                                          |
+| _(optional)_ `SEND_METRICS_TO_GRAFANA` | Set to `false` to drop Prometheus metrics before Grafana Cloud (default `true`)    |
+| _(optional)_ `SCRAPE_INTERVAL`        | Metrics scrape interval (default `30s`)                                            |
 
 ---
 

@@ -43,13 +43,28 @@ loki.relabel "logs_gate" {
   }
 }
 
+// Gate metric forwarding based on SEND_METRICS_TO_GRAFANA (defaults to true).
+prometheus.relabel "metrics_gate" {
+  forward_to = [prometheus.remote_write.grafana_cloud.receiver]
+  rule {
+    action       = "replace"
+    target_label = "__tmp_send_metrics_to_grafana"
+    replacement  = coalesce(env("SEND_METRICS_TO_GRAFANA"), "true")
+  }
+  rule {
+    action        = "drop"
+    source_labels = ["__tmp_send_metrics_to_grafana"]
+    regex         = "false"
+  }
+}
+
 // HTTP server for receiving metrics
 prometheus.receive_http "metrics_receiver" {
   http {
     listen_address = "0.0.0.0"
     listen_port = 9091
   }
-  forward_to = [prometheus.remote_write.grafana_cloud.receiver]
+  forward_to = [prometheus.relabel.metrics_gate.receiver]
 }
 
 // HTTP server for receiving logs
@@ -74,13 +89,13 @@ prometheus.exporter.unix "system" {
 
 prometheus.scrape "system_metrics" {
   targets = prometheus.exporter.unix.system.targets
-  forward_to = [prometheus.remote_write.grafana_cloud.receiver]
+  forward_to = [prometheus.relabel.metrics_gate.receiver]
   scrape_interval = coalesce(env("SCRAPE_INTERVAL"), "30s")
 }
 
 // Relabel service names for downstream metrics in Grafana Cloud
 prometheus.relabel "marketoffer_services_labels" {
-  forward_to = [prometheus.remote_write.grafana_cloud.receiver]
+  forward_to = [prometheus.relabel.metrics_gate.receiver]
   rule {
     action       = "replace"
     target_label = "service"
@@ -89,7 +104,7 @@ prometheus.relabel "marketoffer_services_labels" {
 }
 
 prometheus.relabel "director_discovery_labels" {
-  forward_to = [prometheus.remote_write.grafana_cloud.receiver]
+  forward_to = [prometheus.relabel.metrics_gate.receiver]
   rule {
     action        = "drop"
     source_labels = ["__name__"]
@@ -103,7 +118,7 @@ prometheus.relabel "director_discovery_labels" {
 }
 
 prometheus.relabel "owner_discovery_labels" {
-  forward_to = [prometheus.remote_write.grafana_cloud.receiver]
+  forward_to = [prometheus.relabel.metrics_gate.receiver]
   rule {
     action        = "drop"
     source_labels = ["__name__"]
@@ -117,7 +132,7 @@ prometheus.relabel "owner_discovery_labels" {
 }
 
 prometheus.relabel "company_discovery_labels" {
-  forward_to = [prometheus.remote_write.grafana_cloud.receiver]
+  forward_to = [prometheus.relabel.metrics_gate.receiver]
   rule {
     action        = "drop"
     source_labels = ["__name__"]
@@ -131,7 +146,7 @@ prometheus.relabel "company_discovery_labels" {
 }
 
 prometheus.relabel "site_fetch_labels" {
-  forward_to = [prometheus.remote_write.grafana_cloud.receiver]
+  forward_to = [prometheus.relabel.metrics_gate.receiver]
   rule {
     action        = "drop"
     source_labels = ["__name__"]
@@ -145,7 +160,7 @@ prometheus.relabel "site_fetch_labels" {
 }
 
 prometheus.relabel "person_linkedin_labels" {
-  forward_to = [prometheus.remote_write.grafana_cloud.receiver]
+  forward_to = [prometheus.relabel.metrics_gate.receiver]
   rule {
     action        = "drop"
     source_labels = ["__name__"]
